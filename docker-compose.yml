@@ -1,0 +1,53 @@
+services:
+
+  mariadb:
+    image: ${MARIADB_IMAGE}
+    container_name: ${MARIADB_CONTAINER_NAME}
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MOODLE_DATABASE_NAME}
+      MARIADB_USER: ${MOODLE_DATABASE_USER}
+      MARIADB_PASSWORD: ${MOODLE_DATABASE_PASSWORD}
+      MARIADB_CHARACTER_SET: ${MARIADB_CHARACTER_SET}
+      MARIADB_COLLATE: ${MARIADB_COLLATE}
+    volumes:
+      - ${MARIADB_DATA_PATH}:/var/lib/mysql:Z
+    command:
+      - --character-set-server=${MARIADB_CHARACTER_SET}
+      - --collation-server=${MARIADB_COLLATE}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MOODLE_BRANCH: ${MOODLE_BRANCH}
+    image: ${MOODLE_IMAGE}
+    container_name: ${MOODLE_CONTAINER_NAME}
+    restart: unless-stopped
+    ports:
+      - "${MOODLE_HTTP_PORT}:80"
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      MOODLE_WWWROOT: ${MOODLE_WWWROOT}
+      MOODLE_DATABASE_HOST: ${MOODLE_DATABASE_HOST}
+      MOODLE_DATABASE_USER: ${MOODLE_DATABASE_USER}
+      MOODLE_DATABASE_PASSWORD: ${MOODLE_DATABASE_PASSWORD}
+      MOODLE_DATABASE_NAME: ${MOODLE_DATABASE_NAME}
+      MOODLE_USERNAME: ${MOODLE_USERNAME}
+      MOODLE_PASSWORD: ${MOODLE_PASSWORD}
+      MOODLE_EMAIL: ${MOODLE_EMAIL}
+      MOODLE_SITE_NAME: ${MOODLE_SITE_NAME}
+    volumes:
+      - ${MOODLE_DATA_PATH}:/var/moodledata:Z
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
