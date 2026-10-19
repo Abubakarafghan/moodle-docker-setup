@@ -149,6 +149,9 @@ When the Moodle container starts for the first time, `scripts/docker-entrypoint.
 
 On later starts, the existing `config.php` is reused and Moodle is not installed again.
 
+## Diagram 
+![alt text](diagram.png)
+
 ## License
 
 Moodle is free and open-source software distributed under the GNU General Public License v3 or later. Review Moodle's licensing requirements before redistributing Moodle or publishing modifications. Add a license file for the Docker setup itself if you add original code or documentation.
